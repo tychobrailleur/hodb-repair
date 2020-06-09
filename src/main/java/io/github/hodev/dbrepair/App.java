@@ -3,7 +3,10 @@
  */
 package io.github.hodev.dbrepair;
 
+import io.github.hodev.dbrepair.export.DbTableSqlSerialiser;
 import org.apache.commons.cli.*;
+
+import java.util.List;
 
 public class App {
     public static void main(String[] args) {
@@ -25,8 +28,13 @@ public class App {
                 System.out.println("Location of db: " + dbLocation);
 
                 final DbReader dbReader = new DbReader();
+                List<DbTable> tables = dbReader.readAllTables(dbLocation);
+
                 // Write the SQL files to disk
-                dbReader.readDb(dbLocation);
+                final DbTableSqlSerialiser serialiser = new DbTableSqlSerialiser();
+                tables.forEach(dbTable -> serialiser.writeAsSql("/tmp", dbTable));
+
+                // TODO Transform values.
 
                 // Write data to database
                 dbReader.writeNewDb("/tmp/output", dbLocation);
