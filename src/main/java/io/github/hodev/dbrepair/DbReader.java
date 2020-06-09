@@ -12,16 +12,14 @@ import java.io.FileReader;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class DbReader {
 
     private String driver = "org.hsqldb.jdbcDriver";
     private String name = "singleUser";
     private String pwd = "";
-    private String urlPrefix = "jdbc:hsqldb:file:";
+    private final static String HSQLDB_URL_PREFIX = "jdbc:hsqldb:file:";
     private String user = "sa";
 
     public void readDb(String database) {
@@ -29,13 +27,12 @@ public class DbReader {
         Connection connection = null;
         try {
             Class.forName(driver);
-            connection = DriverManager.getConnection(urlPrefix + database, user, pwd);
+            connection = DriverManager.getConnection(HSQLDB_URL_PREFIX + database, user, pwd);
             final Statement statement = connection.createStatement(
                     ResultSet.TYPE_SCROLL_INSENSITIVE,
                     ResultSet.CONCUR_READ_ONLY
             );
 
-            //statement.execute("SCRIPT '/tmp/database'");
             final ResultSet resultSet = statement.executeQuery("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'PUBLIC'");
 
             List<String> tables = new ArrayList<>();
@@ -45,7 +42,50 @@ public class DbReader {
 
             tables.forEach(table -> {
                 try {
-                    statement.execute(String.format("PERFORM EXPORT SCRIPT FOR TABLE %s DATA TO '%s'", table, "/tmp/" + table + ".sql"));
+                    // Not available before HSQLDB 2.5.0
+                    // statement.execute(String.format("PERFORM EXPORT SCRIPT FOR TABLE %s DATA TO '%s'", table, "/tmp/" + table + ".sql"));
+
+
+                    List<Map<String, Object>> entries = new ArrayList<>();
+                    ResultSet entriesResultSet = statement.executeQuery(String.format("SELECT * FROM %s", table));
+                    if (entriesResultSet != null) {
+                        final Map<String, String> columnTypes =  new HashMap<>();
+                        final ResultSetMetaData metaData = entriesResultSet.getMetaData();
+                        int columnCount = metaData.getColumnCount();
+
+                        for (int i = 1; i <= columnCount; i++) {
+                            String columnName = metaData.getColumnName(i);
+                            String columnType = metaData.getColumnTypeName(i);
+
+                            columnTypes.put(columnName, columnType);
+                        }
+
+                        while (entriesResultSet.next()) {
+                            final Map<String, Object> row = new HashMap<>();
+                            columnTypes.entrySet().forEach(col -> {
+                                try {
+                                    Object val = switch (col.getValue()) {
+                                        case "VARCHAR" -> entriesResultSet.getString(col.getKey());
+                                        case "BOOLEAN" -> entriesResultSet.getBoolean(col.getKey());
+                                        case "INTEGER", "TINYINT" -> entriesResultSet.getInt(col.getKey());
+                                        case "DOUBLE" -> entriesResultSet.getDouble(col.getKey());
+                                        case "TIMESTAMP" -> entriesResultSet.getTimestamp(col.getKey());
+                                        default -> throw new RuntimeException("Unknown Column type: " + col.getValue());
+                                    };
+
+                                    if (val != null) {
+                                        row.put(col.getKey(), val);
+                                    }
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            });
+
+                            entries.add(row);
+                        }
+                    }
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

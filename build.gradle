@@ -22,8 +22,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.hsqldb:hsqldb:2.5.0'
-    implementation 'org.hsqldb:sqltool:2.5.0'
+    implementation 'org.hsqldb:hsqldb:2.4.1'
+    implementation 'org.hsqldb:sqltool:2.4.1'
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'commons-io:commons-io:2.7'
 
