@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+CWD=$(cd `dirname $0` && pwd)
+
+java $JVM_OPTS \
+     -Dhsqldb.reconfig_logging=false \
+     -jar ${CWD}/hodb-repair-0.1.0-SNAPSHOT.jar "$@"
