@@ -19,4 +19,8 @@ public final class StringUtils {
 
         return value;
     }
+
+    public static int versionToInt(String version) {
+        return Integer.parseInt(version.replaceAll("\\.", ""));
+    }
 }

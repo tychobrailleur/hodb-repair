@@ -40,6 +40,7 @@ public class DbTable {
     }
 
     public DbTable columns(Map<String, String> columns) {
+        this.columns.clear();
         this.columns.putAll(columns);
         return this;
     }

@@ -3,79 +3,149 @@
  */
 package io.github.hodev.dbrepair;
 
+import io.github.hodev.dbrepair.archiver.Archiver;
 import io.github.hodev.dbrepair.exporter.DbTableSqlSerialiser;
 import io.github.hodev.dbrepair.importer.DbSqlFileImport;
 import io.github.hodev.dbrepair.importer.Importer;
 import io.github.hodev.dbrepair.transform.DefaultColumnValueTransformation;
+import io.github.hodev.dbrepair.transform.RemoveColumnTransformation;
 import io.github.hodev.dbrepair.transform.Transformation;
 import io.github.hodev.dbrepair.transform.TransformationHandler;
 import org.apache.commons.cli.*;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class App {
     public static void main(String[] args) {
+        Logger.getLogger("hsqldb.db").setLevel(Level.WARNING);
+
         final Options options = new Options();
         options.addOption(Option
                 .builder("d")
                 .longOpt("db")
                 .numberOfArgs(1)
-                .required()
+            .required()
                 .build());
         options.addOption(Option
                 .builder("o")
                 .longOpt("output-db")
                 .numberOfArgs(1)
-                .required()
                 .build());
+        options.addOption(Option
+            .builder("v")
+            .longOpt("version")
+            .numberOfArgs(1)
+            .build());
+        options.addOption(Option
+            .builder("x")
+            .longOpt("export")
+            .numberOfArgs(1)
+            .build());
 
         final CommandLineParser parser = new DefaultParser();
 
         try {
             final CommandLine cmd = parser.parse(options, args);
 
-            if (cmd.hasOption("d")) {
+            if (cmd.hasOption("o")) {
+
                 String dbLocation = cmd.getOptionValue("d");
                 String outputDbLocation = cmd.getOptionValue("o");
 
-                System.out.println("Location of db: " + dbLocation);
+                final RepairConfig conf = new RepairConfig();
+                conf.setInputDbLocation(dbLocation);
+                conf.setOutputDbLocation(outputDbLocation);
 
-                List<DbTable> tables = readDatabase(dbLocation);
-                applyTransformations(tables);
-                writeSqlFileToDisk(tables);
-                loadSqlFileToNewDb(outputDbLocation);
+                if (cmd.hasOption("v")) {
+                    conf.setTargetDbVersion(cmd.getOptionValue("v"));
+                }
+
+                System.out.printf("Exporting db %s to new db at %s with version %s...%n",
+                    conf.getInputDbLocation(),
+                    conf.getOutputDbLocation(),
+                    conf.getTargetDbVersion()
+                );
+
+                List<DbTable> tables = readDatabase(conf);
+                applyTransformations(conf, tables);
+                writeSqlFileToDisk(conf, tables);
+                loadSqlFileToNewDb(conf);
+            } else if (cmd.hasOption("x")) {
+                String exportLocation = cmd.getOptionValue("x");
+                String dbLocation = cmd.getOptionValue("d");
+
+                final RepairConfig conf = new RepairConfig();
+                conf.setInputDbLocation(dbLocation);
+                conf.setArchiveLocation(exportLocation);
+
+                if (cmd.hasOption("v")) {
+                    conf.setTargetDbVersion(cmd.getOptionValue("v"));
+                }
+
+                List<DbTable> tables = readDatabase(conf);
+                applyTransformations(conf, tables);
+                writeSqlFileToDisk(conf, tables);
+
+                Archiver archiver = new Archiver();
+                String archivePath = archiver.perform(conf);
+
+                System.out.printf("Database has been exported to %s.%n", archivePath);
             }
         } catch (ParseException pe) {
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp( "Extract data from an existing db and import into a new one after transformations.", options);
+            formatter.printHelp( "Extract data from an existing db " +
+                "and import into a new one after transformations.", options);
             System.exit(1);
         }
     }
 
-    private static List<DbTable> readDatabase(String dbLocation) {
+    private static List<DbTable> readDatabase(RepairConfig config) {
         final DbReader dbReader = new DbReader();
-        return dbReader.readAllTables(dbLocation);
+        return dbReader.readAllTables(config.getInputDbLocation());
     }
 
-    private static void loadSqlFileToNewDb(String outputDbLocation) {
-        final DatabaseConnection connection = new HsqlDatabaseConnection("file", outputDbLocation, "sa", "");
-        final Importer dbImporter = new DbSqlFileImport("/tmp");
+    private static void loadSqlFileToNewDb(RepairConfig config) {
+        final DatabaseConnection connection = new HsqlDatabaseConnection(
+            "file",
+            config.getOutputDbLocation(),
+            "sa",
+            "");
+        final Importer dbImporter = new DbSqlFileImport(config);
         dbImporter.importData(connection);
     }
 
-    private static void writeSqlFileToDisk(List<DbTable> tables) {
+    private static void writeSqlFileToDisk(RepairConfig config, List<DbTable> tables) {
         final DbTableSqlSerialiser serialiser = new DbTableSqlSerialiser();
-        tables.forEach(dbTable -> serialiser.writeAsSql("/tmp", dbTable));
+        tables.forEach(dbTable -> serialiser.writeAsSql(config.getTempDirectory(), dbTable));
     }
 
-    private static void applyTransformations(List<DbTable> tables) {
+    private static void applyTransformations(RepairConfig config, List<DbTable> tables) {
         final TransformationHandler handler = new TransformationHandler();
         final Transformation globalRankingDefault = new DefaultColumnValueTransformation(
                 "VEREIN",
-                "GlobalRanking",
+                "GLOBALRANKING",
+                "INTEGER",
                 0
         );
+        globalRankingDefault.setValidAfterVersion(400);
+        final Transformation hrfIdDefault = new DefaultColumnValueTransformation(
+            "VEREIN",
+            "HRF_ID",
+            "INTEGER",
+            32
+        );
+        final Transformation removePhysiologen = new RemoveColumnTransformation(
+            "VEREIN",
+            "PHYSIOLOGEN",
+            "TWTRAINER"
+        );
+        removePhysiologen.setValidAfterVersion(400);
+
         handler.add(globalRankingDefault);
-        handler.perform(tables);
+        handler.add(hrfIdDefault);
+        handler.add(removePhysiologen);
+        handler.perform(config, tables);
     }
 }

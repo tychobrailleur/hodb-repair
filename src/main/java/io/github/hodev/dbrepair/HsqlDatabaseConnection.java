@@ -1,6 +1,7 @@
 package io.github.hodev.dbrepair;
 
-import io.github.hodev.dbrepair.types.*;
+import io.github.hodev.dbrepair.types.Type;
+import io.github.hodev.dbrepair.types.TypeFactory;
 
 import java.io.File;
 import java.sql.*;
@@ -41,7 +42,7 @@ public class HsqlDatabaseConnection extends DatabaseConnection {
     @Override
     public void init() {
         String outputDbLocation = dbName;
-        File outputDb = new File(outputDbLocation + ".data");
+        File outputDb = new File(outputDbLocation + ".properties");
         if (outputDb.exists()) {
             String[] dbFiles = new String[] { ".data", ".script", ".tmp", ".log", ".properties", ".backup" };
             for (String dbFile: dbFiles) {

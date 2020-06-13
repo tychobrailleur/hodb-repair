@@ -1,6 +1,7 @@
 package io.github.hodev.dbrepair;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 public class DbTableLoader {
 
@@ -11,7 +12,7 @@ public class DbTableLoader {
         // statement.execute(String.format("PERFORM EXPORT SCRIPT FOR TABLE %s DATA TO '%s'", table, "/tmp/" + table + ".sql"));
 
         try {
-            DbTable dbTable = new DbTable(tableName);
+            DbTable dbTable = new DbTable(tableName.toUpperCase());
             dbTable.columns(connection.listColumns(tableName));
             dbTable.rows(connection.listRows(dbTable));
             return Optional.of(dbTable);

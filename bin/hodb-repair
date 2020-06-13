@@ -3,4 +3,6 @@
 CWD=$(cd `dirname $0` && pwd)
 ROOT_DIR=${CWD}/..
 
-java $JVM_OPTS -jar ${ROOT_DIR}/target/hodb-repair-0.1.0-SNAPSHOT.jar "$@"
+java $JVM_OPTS \
+     -Dhsqldb.reconfig_logging=false \
+     -jar ${ROOT_DIR}/target/hodb-repair-0.1.0-SNAPSHOT.jar "$@"
