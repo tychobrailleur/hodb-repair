@@ -1,5 +1,13 @@
 HO DB Repair Tool
 
+* Build
+
+  To build:
+
+  #+begin_src bash
+./mvnw package
+  #+end_src
+
 * Usage
 
 ** Repair
