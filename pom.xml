@@ -108,6 +108,7 @@
         <artifactId>maven-release-plugin</artifactId>
         <version>2.5.3</version>
         <configuration>
+          <preparationGoals>clean verify</preparationGoals>
           <tagNameFormat>@{project.version}</tagNameFormat>
           <releaseProfiles>release</releaseProfiles>
         </configuration>
