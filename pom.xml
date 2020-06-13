@@ -15,7 +15,6 @@
   <scm>
     <developerConnection>scm:git:https://github.com/tychobrailleur/hodb-repair.git</developerConnection>
     <url>https://github.com/tychobrailleur/hodb-repair.git</url>
-    <tag>HEAD</tag>
   </scm>
 
   <dependencies>
