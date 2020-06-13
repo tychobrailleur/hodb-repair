@@ -3,7 +3,12 @@
  */
 package io.github.hodev.dbrepair;
 
-import io.github.hodev.dbrepair.export.DbTableSqlSerialiser;
+import io.github.hodev.dbrepair.exporter.DbTableSqlSerialiser;
+import io.github.hodev.dbrepair.importer.DbSqlFileImport;
+import io.github.hodev.dbrepair.importer.Importer;
+import io.github.hodev.dbrepair.transform.DefaultColumnValueTransformation;
+import io.github.hodev.dbrepair.transform.Transformation;
+import io.github.hodev.dbrepair.transform.TransformationHandler;
 import org.apache.commons.cli.*;
 
 import java.util.List;
@@ -17,6 +22,12 @@ public class App {
                 .numberOfArgs(1)
                 .required()
                 .build());
+        options.addOption(Option
+                .builder("o")
+                .longOpt("output-db")
+                .numberOfArgs(1)
+                .required()
+                .build());
 
         final CommandLineParser parser = new DefaultParser();
 
@@ -25,24 +36,46 @@ public class App {
 
             if (cmd.hasOption("d")) {
                 String dbLocation = cmd.getOptionValue("d");
+                String outputDbLocation = cmd.getOptionValue("o");
+
                 System.out.println("Location of db: " + dbLocation);
 
-                final DbReader dbReader = new DbReader();
-                List<DbTable> tables = dbReader.readAllTables(dbLocation);
-
-                // Write the SQL files to disk
-                final DbTableSqlSerialiser serialiser = new DbTableSqlSerialiser();
-                tables.forEach(dbTable -> serialiser.writeAsSql("/tmp", dbTable));
-
-                // TODO Transform values.
-
-                // Write data to database
-                dbReader.writeNewDb("/tmp/output", dbLocation);
+                List<DbTable> tables = readDatabase(dbLocation);
+                applyTransformations(tables);
+                writeSqlFileToDisk(tables);
+                loadSqlFileToNewDb(outputDbLocation);
             }
         } catch (ParseException pe) {
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp( "Log messages to sequence diagrams converter", options);
+            formatter.printHelp( "Extract data from an existing db and import into a new one after transformations.", options);
             System.exit(1);
         }
+    }
+
+    private static List<DbTable> readDatabase(String dbLocation) {
+        final DbReader dbReader = new DbReader();
+        return dbReader.readAllTables(dbLocation);
+    }
+
+    private static void loadSqlFileToNewDb(String outputDbLocation) {
+        final DatabaseConnection connection = new HsqlDatabaseConnection("file", outputDbLocation, "sa", "");
+        final Importer dbImporter = new DbSqlFileImport("/tmp");
+        dbImporter.importData(connection);
+    }
+
+    private static void writeSqlFileToDisk(List<DbTable> tables) {
+        final DbTableSqlSerialiser serialiser = new DbTableSqlSerialiser();
+        tables.forEach(dbTable -> serialiser.writeAsSql("/tmp", dbTable));
+    }
+
+    private static void applyTransformations(List<DbTable> tables) {
+        final TransformationHandler handler = new TransformationHandler();
+        final Transformation globalRankingDefault = new DefaultColumnValueTransformation(
+                "VEREIN",
+                "GlobalRanking",
+                0
+        );
+        handler.add(globalRankingDefault);
+        handler.perform(tables);
     }
 }

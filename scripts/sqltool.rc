@@ -1,0 +1,4 @@
+urlid defaultdb
+url jdbc:hsqldb:/tmp/output/database
+username sa
+password

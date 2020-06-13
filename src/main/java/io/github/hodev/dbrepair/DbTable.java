@@ -50,6 +50,7 @@ public class DbTable {
     }
 
     public DbTable rows(List<Map<String, Type>> rows) {
+        this.rows.clear();
         this.rows.addAll(rows);
         return this;
     }

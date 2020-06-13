@@ -2,6 +2,7 @@ package io.github.hodev.dbrepair;
 
 import io.github.hodev.dbrepair.types.*;
 
+import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +34,25 @@ public class HsqlDatabaseConnection extends DatabaseConnection {
         }
     }
 
+    /**
+     * Init creates the parent directories for the output database if it doesn't exist,
+     * and cleans up the files that exist already.
+     */
+    @Override
+    public void init() {
+        String outputDbLocation = dbName;
+        File outputDb = new File(outputDbLocation + ".data");
+        if (outputDb.exists()) {
+            String[] dbFiles = new String[] { ".data", ".script", ".tmp", ".log", ".properties", ".backup" };
+            for (String dbFile: dbFiles) {
+                File dbFileFile = new File(outputDbLocation + dbFile);
+                dbFileFile.delete();
+            }
+        } else if (!outputDb.getParentFile().exists()) {
+            outputDb.getParentFile().mkdirs();
+        }
+    }
+
     @Override
     public List<String> listTables() {
         List<String> tables = new ArrayList<>();
@@ -54,13 +74,7 @@ public class HsqlDatabaseConnection extends DatabaseConnection {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            closeStatement(statement);
         }
 
         return tables;
@@ -93,13 +107,7 @@ public class HsqlDatabaseConnection extends DatabaseConnection {
         } catch (Exception e) {
             e.printStackTrace();
         }  finally {
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            closeStatement(statement);
         }
 
         return columnTypes;
@@ -145,16 +153,35 @@ public class HsqlDatabaseConnection extends DatabaseConnection {
             // TODO Handle exception.
             e.printStackTrace();
         }  finally {
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            closeStatement(statement);
         }
 
         return entries;
+    }
+
+    @Override
+    public boolean execute(String insert) {
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            return statement.execute(insert);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            closeStatement(statement);
+        }
+
+        return false;
+    }
+
+    private void closeStatement(Statement statement) {
+        if (statement != null) {
+            try {
+                statement.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override

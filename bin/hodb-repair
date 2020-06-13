@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+CWD=$(cd `dirname $0` && pwd)
+ROOT_DIR=${CWD}/..
+
+java $JVM_OPTS -jar ${ROOT_DIR}/target/hodb-repair-0.1.0-SNAPSHOT.jar "$@"

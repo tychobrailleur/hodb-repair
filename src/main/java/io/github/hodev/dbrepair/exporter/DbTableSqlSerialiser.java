@@ -1,4 +1,4 @@
-package io.github.hodev.dbrepair.export;
+package io.github.hodev.dbrepair.exporter;
 
 import io.github.hodev.dbrepair.DbTable;
 import io.github.hodev.dbrepair.types.Type;
@@ -12,8 +12,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Serialises a {@link DbTable} to a SQL file.
+ */
 public class DbTableSqlSerialiser {
 
+    /**
+     * Writes the content of {@link DbTable} to a SQL file in the <code>outputDir</code>
+     * directory.  Each table is written to a separate file; the name of the file is the
+     * name of the table, in upper case.
+     *
+     * @param outputDir Location of the serialised file.
+     * @param dbTable DbTable to write to file.
+     */
     public void writeAsSql(String outputDir, DbTable dbTable) {
 
         BufferedWriter writer = null;
