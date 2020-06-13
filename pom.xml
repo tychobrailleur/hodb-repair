@@ -3,7 +3,7 @@
 
   <groupId>io.github.hodev</groupId>
   <artifactId>hodb-repair</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.1-SNAPSHOT</version>
   <name>hodb-repair</name>
 
   <properties>
@@ -13,7 +13,7 @@
   <scm>
     <developerConnection>scm:git:https://github.com/tychobrailleur/hodb-repair.git</developerConnection>
     <url>https://github.com/tychobrailleur/hodb-repair.git</url>
-    <tag>0.1.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <dependencies>
