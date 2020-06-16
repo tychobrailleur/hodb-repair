@@ -114,6 +114,7 @@ public class App {
             "");
         final Importer dbImporter = new DbSqlFileImport(config);
         dbImporter.importData(connection);
+        connection.execute("SHUTDOWN");
     }
 
     private static void writeSqlFileToDisk(RepairConfig config, List<DbTable> tables) {

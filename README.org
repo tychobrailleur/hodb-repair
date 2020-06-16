@@ -8,6 +8,12 @@ HO DB Repair Tool
 ./mvnw package
   #+end_src
 
+* Release
+
+  #+begin_src bash
+mvn -Dresume=false release:prepare release:perform -Pgithub -Prelease -Dtoken=<GITHUB_TOKEN>
+  #+end_src
+
 * Usage
 
 ** Repair

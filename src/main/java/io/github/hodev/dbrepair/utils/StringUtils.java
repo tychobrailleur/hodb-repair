@@ -14,7 +14,7 @@ public final class StringUtils {
 
     public static String escapeNewlines(String value) {
         if (value != null) {
-            return value.replaceAll("\n", "\\n");
+            return value.replaceAll("[\n\r]+", "\\n");
         }
 
         return value;
