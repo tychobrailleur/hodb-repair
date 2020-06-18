@@ -12,4 +12,9 @@ public class BooleanType implements Type {
     public String valueAsSql() {
         return value ? "TRUE" : "FALSE";
     }
+
+    @Override
+    public Object value() {
+        return value;
+    }
 }

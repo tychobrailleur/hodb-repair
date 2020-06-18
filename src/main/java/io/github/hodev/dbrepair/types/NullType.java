@@ -6,4 +6,9 @@ public class NullType implements Type {
     public String valueAsSql() {
         return "NULL";
     }
+
+    @Override
+    public Object value() {
+        return null;
+    }
 }

@@ -12,8 +12,13 @@ public class StringType implements Type {
 
     public String valueAsSql() {
         return String.format("'%s'",
-                StringUtils.escapeNewlines(
-                    StringUtils.escapeQuotes(value)
-                ));
+            StringUtils.escapeNewlines(
+                StringUtils.escapeQuotes(value)
+            ));
+    }
+
+    @Override
+    public Object value() {
+        return value;
     }
 }

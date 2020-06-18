@@ -12,4 +12,9 @@ public class DoubleType implements Type {
     public String valueAsSql() {
         return String.valueOf(value);
     }
+
+    @Override
+    public Object value() {
+        return value;
+    }
 }

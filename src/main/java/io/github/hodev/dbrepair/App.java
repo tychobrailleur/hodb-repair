@@ -7,10 +7,7 @@ import io.github.hodev.dbrepair.archiver.Archiver;
 import io.github.hodev.dbrepair.exporter.DbTableSqlSerialiser;
 import io.github.hodev.dbrepair.importer.DbSqlFileImport;
 import io.github.hodev.dbrepair.importer.Importer;
-import io.github.hodev.dbrepair.transform.DefaultColumnValueTransformation;
-import io.github.hodev.dbrepair.transform.RemoveColumnTransformation;
-import io.github.hodev.dbrepair.transform.Transformation;
-import io.github.hodev.dbrepair.transform.TransformationHandler;
+import io.github.hodev.dbrepair.transform.*;
 import org.apache.commons.cli.*;
 
 import java.util.List;
@@ -143,10 +140,14 @@ public class App {
             "TWTRAINER"
         );
         removePhysiologen.setValidAfterVersion(400);
+        final Transformation checkDbVersion = new SetDbVersionTransformation(
+            config.getTargetDbVersion()
+        );
 
         handler.add(globalRankingDefault);
         handler.add(hrfIdDefault);
         handler.add(removePhysiologen);
+        handler.add(checkDbVersion);
         handler.perform(config, tables);
     }
 }

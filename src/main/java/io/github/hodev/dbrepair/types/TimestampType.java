@@ -15,4 +15,9 @@ public class TimestampType implements Type {
     public String valueAsSql() {
         return String.format("'%s'", DateUtils.formatTimestamp(value));
     }
+
+    @Override
+    public Object value() {
+        return value;
+    }
 }

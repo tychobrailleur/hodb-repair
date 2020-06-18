@@ -11,8 +11,6 @@ public class DbReader {
 
     private final List<String> failures = new ArrayList<>();
 
-
-
     public List<DbTable> readAllTables(String database) {
 
         DatabaseConnection connection = new HsqlDatabaseConnection("file", database, USER, PASSWORD);
