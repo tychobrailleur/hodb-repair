@@ -10,14 +10,28 @@ HO DB Repair Tool
 
 * Release
 
+First set release version of project:
+
+#+begin_src bash
+mvn versions:set -DnewVersion=<RELEASE_VERSION>
+#+end_src
+
+Package application:
+
   #+begin_src bash
-mvn -Dresume=false release:prepare release:perform -Pgithub -Prelease -Dtoken=<GITHUB_TOKEN>
+mvn package
   #+end_src
 
 Followed by:
 
 #+begin_src bash
 mvn github-release:github-release
+#+end_src
+
+Next set development version:
+
+#+begin_src bash
+mvn versions:set -DnewVersion=<NEXT_VERSION>-SNAPSHOT
 #+end_src
 
 * Usage
