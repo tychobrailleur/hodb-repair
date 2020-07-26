@@ -3,7 +3,7 @@
 
   <groupId>io.github.hodev</groupId>
   <artifactId>hodb-repair</artifactId>
-  <version>0.1.4-SNAPSHOT</version>
+  <version>0.1.5</version>
   <name>hodb-repair</name>
 
   <properties>
@@ -112,6 +112,26 @@
           <tagNameFormat>@{project.version}</tagNameFormat>
           <releaseProfiles>release</releaseProfiles>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.ragedunicorn.tools.maven</groupId>
+        <artifactId>github-release-maven-plugin</artifactId>
+        <version>1.0.2</version>
+        <executions>
+          <execution>
+            <id>default-cli</id>
+            <configuration>
+              <owner>tychobrailleur</owner>
+              <repository>hodb-repair</repository>
+              <server>github-oauth</server>
+              <tagName>v${project.version}</tagName>
+              <targetCommitish>master</targetCommitish>
+              <assets>
+                <asset>${project.build.directory}/${project.artifactId}-${project.version}.tar.gz</asset>
+              </assets>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

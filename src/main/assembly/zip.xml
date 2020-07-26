@@ -16,6 +16,7 @@
     <file>
       <source>scripts/hodb-repair</source>
       <outputDirectory>/</outputDirectory>
+      <filtered>true</filtered>
     </file>
     <file>
       <source>LICENSE</source>
