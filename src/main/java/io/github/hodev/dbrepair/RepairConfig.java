@@ -1,6 +1,8 @@
 package io.github.hodev.dbrepair;
 
 public class RepairConfig {
+    /** Name of version to use current one. */
+    public final static String CURRENT_VERSION = "current";
 
     private String tempDirectory = "/tmp";
     private String targetDbVersion = "4.0.0";
@@ -22,6 +24,10 @@ public class RepairConfig {
 
     public void setTargetDbVersion(String targetDbVersion) {
         this.targetDbVersion = targetDbVersion;
+    }
+
+    public boolean reuseSameVersion() {
+        return CURRENT_VERSION.equalsIgnoreCase(targetDbVersion);
     }
 
     public String getInputDbLocation() {

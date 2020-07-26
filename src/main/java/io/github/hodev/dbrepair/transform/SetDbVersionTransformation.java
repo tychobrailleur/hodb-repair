@@ -1,6 +1,7 @@
 package io.github.hodev.dbrepair.transform;
 
 import io.github.hodev.dbrepair.DbTable;
+import io.github.hodev.dbrepair.RepairConfig;
 import io.github.hodev.dbrepair.types.Type;
 import io.github.hodev.dbrepair.types.TypeFactory;
 import io.github.hodev.dbrepair.utils.StringUtils;
@@ -31,7 +32,6 @@ public class SetDbVersionTransformation implements Transformation {
 
     @Override
     public void perform(List<DbTable> tables) {
-
         for (DbTable table: tables) {
             if (table.getName().equalsIgnoreCase("USERCONFIGURATION")) {
                 AtomicBoolean foundVersion = new AtomicBoolean(false);
@@ -43,10 +43,11 @@ public class SetDbVersionTransformation implements Transformation {
                         foundVersion.set(true);
                         final Map<String, Type> dbVersionRow = new HashMap<>();
                         dbVersionRow.put("CONFIG_KEY", TypeFactory.createType("DBVersion"));
-                        int val = (int)stringTypeMap.get("CONFIG_VALUE").value();
+                        int val = Integer.parseInt(stringTypeMap.get("CONFIG_VALUE").value().toString());
                         System.out.println("DBVersion = " + val);
 
-                        if (StringUtils.versionToInt(version) < val) {
+                        if (!
+                            RepairConfig.CURRENT_VERSION.equalsIgnoreCase(version) && StringUtils.versionToInt(version) < val) {
                             dbVersionRow.put("CONFIG_VALUE", TypeFactory.createType(StringUtils.versionToInt(version)));
                         } else {
                             dbVersionRow.put("CONFIG_VALUE", TypeFactory.createType(val));

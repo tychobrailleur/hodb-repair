@@ -17,7 +17,7 @@ public class TransformationHandler {
 
     public void perform(RepairConfig config, List<DbTable> tables) {
         transformationList.forEach(transformation -> {
-            if (StringUtils.versionToInt(config.getTargetDbVersion()) >= transformation.getValidAfterVersion()) {
+            if (config.reuseSameVersion() || StringUtils.versionToInt(config.getTargetDbVersion()) >= transformation.getValidAfterVersion()) {
                 transformation.perform(tables);
             }
         });

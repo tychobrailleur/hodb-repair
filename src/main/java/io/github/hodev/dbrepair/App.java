@@ -89,7 +89,7 @@ public class App {
             conf.setTargetDbVersion(cmd.getOptionValue("v"));
         } else {
             // Use same database version as source.
-            conf.setTargetDbVersion("current");
+            conf.setTargetDbVersion(RepairConfig.CURRENT_VERSION);
         }
 
         System.out.printf("Exporting db %s to new db at %s with version %s...%n",
@@ -148,8 +148,10 @@ public class App {
     }
 
     private void applyTransformations(RepairConfig config, List<DbTable> tables) {
-        if (!"current".equalsIgnoreCase(config.getTargetDbVersion())) {
-            final TransformationHandler handler = new TransformationHandler();
+        final TransformationHandler handler = new TransformationHandler();
+
+        handler.add(new SetDbVersionTransformation(config.getTargetDbVersion()));
+        if (!config.reuseSameVersion()) {
             final Transformation globalRankingDefault = new DefaultColumnValueTransformation(
                 "VEREIN",
                 "GLOBALRANKING",
@@ -173,7 +175,8 @@ public class App {
             handler.add(globalRankingDefault);
             handler.add(hrfIdDefault);
             handler.add(removePhysiologen);
-            handler.perform(config, tables);
         }
+
+        handler.perform(config, tables);
     }
 }
