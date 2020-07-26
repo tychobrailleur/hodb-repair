@@ -65,14 +65,26 @@ public class DbSqlFileImport implements Importer {
 
     private void loadSchema(DatabaseConnection connection) {
         try {
-            final InputStream scriptResource = DbReader.class.getResourceAsStream(
-                String.format("/database-%s.script", config.getTargetDbVersion())
-            );
+
+            InputStream scriptResource = null;
+
+            if ("current".equalsIgnoreCase(config.getTargetDbVersion())) {
+                final File dbDirectory = new File(config.getInputDbLocation());
+                final File file = new File(dbDirectory.getParent(), "database.script");
+                scriptResource = new FileInputStream(file);
+            } else {
+                scriptResource = DbReader.class.getResourceAsStream(
+                    String.format("/database-%s.script", config.getTargetDbVersion())
+                );
+            }
 
             BufferedReader in = new BufferedReader(new InputStreamReader(scriptResource, StandardCharsets.UTF_8));
             String line;
             while ((line = in.readLine()) != null) {
-                connection.execute(line);
+                // Only apply the `CREATE` commands.
+                if (line.startsWith("CREATE")) {
+                    connection.execute(line);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

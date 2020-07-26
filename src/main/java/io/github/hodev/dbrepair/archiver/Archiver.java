@@ -12,6 +12,9 @@ import java.util.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * Archiver creates a zip file containing all the exported SQL of a database.
+ */
 public class Archiver {
     private final static String[] SQL_FILES_EXT = new String[]{"sql"};
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd-HHmmss");
