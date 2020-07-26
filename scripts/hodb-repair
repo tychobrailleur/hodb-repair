@@ -4,4 +4,4 @@ CWD=$(cd `dirname $0` && pwd)
 
 java $JVM_OPTS \
      -Dhsqldb.reconfig_logging=false \
-     -jar ${CWD}/hodb-repair-0.1.3.jar "$@"
+     -jar ${CWD}/hodb-repair-0.1.4-SNAPSHOT.jar "$@"
