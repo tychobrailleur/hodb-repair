@@ -75,6 +75,14 @@ Loading file /tmp/MATCHESKURZINFO.sql...
 
    #+end_src
 
+   3 values are accepted by the =version= argument:
+
+   - =3.0.0= :: targets HO 3.x database,
+   - =4.0.0= :: targets HO 4.x database,
+   - =current= :: re-imports data in a database with the same schema
+     as the source database.
+
+
 ** Export
 
    A database can also be exported as an archive containing the insert
